@@ -12,7 +12,6 @@ let voices = [];
 let utterance = null;
 let isSpeaking = false;
 
-
 function loadVoices() {
     voices = synth.getVoices();
 
@@ -37,15 +36,16 @@ function loadVoices() {
 loadVoices();
 synth.addEventListener("voiceschanged", loadVoices);
 
-
 function createUtterance() {
     const message = text.value.trim();
 
     if (!message) {
+        alert("Please enter some text");
         return null;
     }
 
     if (voices.length === 0) {
+        alert("No voices available");
         return null;
     }
 
@@ -58,28 +58,17 @@ function createUtterance() {
     return speech;
 }
 
-
 function speak() {
-    const message = text.value.trim();
+    const newUtterance = createUtterance();
 
-    if (!message) {
-        synth.cancel();
-        utterance = null;
-        isSpeaking = false;
-        alert("Please enter some text");
-        return;
-    }
-
-    if (voices.length === 0) {
-        alert("No voices available");
+    if (newUtterance === null) {
         return;
     }
 
     synth.cancel();
 
-    utterance = createUtterance();
-
-    if (!utterance) return;
+    utterance = newUtterance;
+    isSpeaking = false;
 
     const currentUtterance = utterance;
 
@@ -92,18 +81,19 @@ function speak() {
     currentUtterance.onend = () => {
         if (utterance === currentUtterance) {
             isSpeaking = false;
+            utterance = null;
         }
     };
 
     currentUtterance.onerror = () => {
         if (utterance === currentUtterance) {
             isSpeaking = false;
+            utterance = null;
         }
     };
 
     synth.speak(currentUtterance);
 }
-
 
 function stop() {
     synth.cancel();
@@ -111,13 +101,11 @@ function stop() {
     isSpeaking = false;
 }
 
-
 rate.addEventListener("input", () => {
     if (utterance) {
         utterance.rate = Number(rate.value);
     }
 });
-
 
 pitch.addEventListener("input", () => {
     if (utterance) {
@@ -125,13 +113,11 @@ pitch.addEventListener("input", () => {
     }
 });
 
-
 voiceSelect.addEventListener("change", () => {
     if (utterance && voices.length > 0) {
         utterance.voice = voices[Number(voiceSelect.value)];
     }
 });
-
 
 speakBtn.addEventListener("click", speak);
 stopBtn.addEventListener("click", stop);
